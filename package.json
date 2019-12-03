@@ -1,0 +1,21 @@
+{
+  "name": "@codeinkit/cli",
+  "version": "1.0.0",
+  "description": "code in kit cli tool",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "codinkit dev team",
+    "email": "dev@codinkit.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.7.1",
+    "flows": "@codeinkit/flows",
+    "lodash": "^4.17.15",
+    "ncp": "^2.0.0"
+  }
+}
