@@ -1,6 +1,6 @@
 
 function checkOrigin(fdata) {
-  fdata.isAllowed = true;
+  return {isAllowed: true};
 }
 
 module.exports = [checkOrigin];

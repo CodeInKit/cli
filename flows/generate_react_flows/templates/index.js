@@ -1,5 +1,5 @@
 const path = require('path')
-const {Flows} = require('flows');
+const {Flows} = require('@codeinkit/flows');
 const flows = new Flows();
 const fs = require('fs').promises;
 const Promise = require('bluebird');
