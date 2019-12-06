@@ -3,7 +3,7 @@
 const path = require('path')
 const normalizedFlowsPath = path.join(__dirname, 'flows');
 const normalizedSetupPath = path.join(__dirname, 'setup');
-const { Flows } = require('flows');
+const { Flows } = require('@codeinkit/flows');
 const flows = new Flows();
 const fs = require('fs');
 
