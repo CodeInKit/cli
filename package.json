@@ -13,8 +13,8 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@codeinkit/flows": "^1.0.4",
     "bluebird": "^3.7.1",
-    "flows": "@codeinkit/flows",
     "lodash": "^4.17.15",
     "ncp": "^2.0.0"
   }
