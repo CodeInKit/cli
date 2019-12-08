@@ -7,6 +7,8 @@ const { Flows } = require('@codeinkit/flows');
 const flows = new Flows();
 const fs = require('fs');
 
+flows.hook('exception', console.error);
+
 fs.readdirSync(normalizedFlowsPath).forEach(function(filename) {
   const flow = require('./flows/' + filename);
   const filenameWithoutSuffix = filename.indexOf('.') !== -1 ? filename.split('.').slice(0, -1).join('.') : filename;

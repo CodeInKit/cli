@@ -1,4 +1,4 @@
-# cik-cli
+# @codeinkit/cli
 
 ## Usage
 
@@ -6,6 +6,7 @@
 npx @codeinkit/cli generate flows-server
 npx @codeinkit/cli generate react-flows-server
 npx @codeinkit/cli add react-flows
+npx @codeinkit/cli action <flow name> <action number> <data path>
 ```
 
 ### generate flows-server
@@ -20,17 +21,21 @@ With this template you can write http server, websocket, tcp socket, bot etc.
 * index.js - this file run through the flows and register them after that it activate the routes.
 * routes.js - here you can write the routes related to the project, http routes, websocket etc.
 
-### generate react-flows-server
+### @codeinkit/cli generate react-flows-server
 
 create a websocket server that work out of the box with react-flows
 
 the file structure is the same as the `flow-server` but unlike the `flow-server` routes already written to support websocket
 and there is existing flow of `allow_origin` which allow all origins but can be change to support specific origins.
 
-### cik-cli add react-flows
+### @codeinkit/cli add react-flows
 
 Add flows library to react with the `cik-react`.
 This command also add the flows folder with ready to use flows instance and websocket. 
+
+### @codeinkit/cli <flow name> <action number> <data path>
+
+execute single action according to data in path
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
