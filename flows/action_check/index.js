@@ -36,7 +36,7 @@ function UNSAFE_dynamicRequire(data, unsafe) {
 async function UNSAFE_includeSetup(data, unsafe) {
   (await fs.readdir(data.normalizedSetupPath)).forEach((filename) => {
     if(filename === '.gitkeep') return;
-    const singleSetup = require('./setup/' + filename);
+    const singleSetup = require(data.normalizedSetupPath + filename);
     const filenameWithoutSuffix = filename.split('.').slice(0, -1).join('.');
     global[filenameWithoutSuffix] = singleSetup;
   });
