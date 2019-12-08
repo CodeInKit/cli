@@ -31,7 +31,7 @@ module.exports = function(execFlow) {
 
     connection.on('message', async message => {
       const data = JSON.parse(message.utf8Data);
-      const rd = JSON.stringify(await execFlow(data.flowName, data));
+      const rd = JSON.stringify(await execFlow(data.__flows.flowName, data));
       connection.send(rd);
     });
   });
