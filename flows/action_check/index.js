@@ -49,7 +49,10 @@ async function UNSAFE_executeAction(data, unsafe) {
 
   try {
     console.log(`########################################`);
-    console.log(await unsafe.action(unsafe.data));
+    const res = await unsafe.action(unsafe.data);
+    console.log(res);
+    console.log(`#########COPYABLE JSON##################`);
+    console.log(JSON.stringify(res));
     console.log(`########################################`);
   } catch(err) {
     console.error(`ERROR: ${err.message}`);
