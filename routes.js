@@ -14,6 +14,9 @@ module.exports = function(exec) {
   .command('action <flowName> <flowActionNumber> <dataPath>', 'execute a specific action with data from path', () => {}, (argv) => {
     exec('action_check', {flowName: argv.flowName, flowAction: argv.flowActionNumber, dataPath: argv.dataPath}, {});
   })
+  .command('flow <flowName> <dataPath>', 'execute a specific flow', () => {}, (argv) => {
+    exec('flow_check', {flowName: argv.flowName, dataPath: argv.dataPath}, {});
+  })
   .help()
   .argv;
 }
