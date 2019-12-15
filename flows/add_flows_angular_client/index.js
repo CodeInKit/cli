@@ -38,11 +38,11 @@ function copyFiles() {
 async function changeFiles() {
   console.log('change files');
   
-  const mainIndexPath = `${process.cwd()}/src/index.js`;
+  const mainIndexPath = `${process.cwd()}/src/main.ts`;
   const mainIndex = await fs.readFile(mainIndexPath, 'utf-8');
   const lastImport = mainIndex.lastIndexOf('import');
   const lineToAppend = mainIndex.indexOf('\n', lastImport);
-  const newMainIndex = stringSplice(mainIndex, lineToAppend + 1, 0, `import './flows';\n`);
+  const newMainIndex = stringSplice(mainIndex, lineToAppend + 1, 0, `import './app/flows';\n`);
 
   await fs.writeFile(mainIndexPath, newMainIndex);
 }
