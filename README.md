@@ -4,7 +4,7 @@
 
 ```
 npx @codeinkit/cli generate flows-server
-npx @codeinkit/cli generate react-flows-server
+npx @codeinkit/cli generate ws-flows-server
 npx @codeinkit/cli add react-flows-client
 npx @codeinkit/cli add angular-flows-client
 npx @codeinkit/cli action <flow name> <action number> <data path>
