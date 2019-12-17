@@ -11,6 +11,11 @@
     "name": "codinkit dev team",
     "email": "dev@codinkit.com"
   },
+  "repository": {
+    "type": "git",
+    "directory": "github",
+    "url": "https://github.com/CodeInKit/cli"
+  },
   "license": "MIT",
   "dependencies": {
     "@codeinkit/flows": "^1.0.4",

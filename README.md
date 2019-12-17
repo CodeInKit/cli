@@ -8,6 +8,7 @@ npx @codeinkit/cli generate ws-flows-server
 npx @codeinkit/cli add react-flows-client
 npx @codeinkit/cli add angular-flows-client
 npx @codeinkit/cli action <flow name> <action number> <data path>
+npx @codeinkit/cli flow <flowName> <dataPath>
 ```
 
 ### generate flows-server
@@ -22,21 +23,30 @@ With this template you can write http server, websocket, tcp socket, bot etc.
 * index.js - this file run through the flows and register them after that it activate the routes.
 * routes.js - here you can write the routes related to the project, http routes, websocket etc.
 
-### @codeinkit/cli generate react-flows-server
+### @codeinkit/cli generate ws-flows-server
 
-create a websocket server that work out of the box with react-flows
+create a websocket server that work out of the box with client flows (ex: react-flows-client, angular-flows-client)
 
 the file structure is the same as the `flow-server` but unlike the `flow-server` routes already written to support websocket
 and there is existing flow of `allow_origin` which allow all origins but can be change to support specific origins.
 
-### @codeinkit/cli add react-flows
+### @codeinkit/cli add react-flows-client
 
-Add flows library to react with the `cik-react`.
+Add flows library to create-react-app project with the [https://www.npmjs.com/package/@codeinkit/flows-client](flows-client).
+This command also add the flows folder with ready to use flows instance and websocket. 
+
+### @codeinkit/cli add angular-flows-client
+
+Add flows library to angular-cli project with the [https://www.npmjs.com/package/@codeinkit/flows-client](flows-client).
 This command also add the flows folder with ready to use flows instance and websocket. 
 
 ### @codeinkit/cli <flow name> <action number> <data path>
 
 execute single action according to data in path
+
+### @codeinkit/cli flow <flowName> <dataPath>
+
+execute single flow
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
