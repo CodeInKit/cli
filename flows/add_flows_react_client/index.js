@@ -19,7 +19,7 @@ function npmInstall() {
   const installDeps = spawn('npm', ['install', ...dependencies], {shell: true});
 
   return new Promise(resolve => {
-    installDeps.stdout.once('close', () => resolve())
+    installDeps.stdout.once('close', () => resolve({}))
   })
 }
 
@@ -27,7 +27,7 @@ function copyFiles() {
   console.log('copy template');
   return new Promise((resolve, reject) => {
     ncp(`${__dirname}/templates`, process.cwd(), err => {
-      if(!err) return resolve();
+      if(!err) return resolve({});
       console.error(err);
       
       return reject(err);
@@ -45,6 +45,8 @@ async function changeFiles() {
   const newMainIndex = stringSplice(mainIndex, lineToAppend + 1, 0, `import './flows';\n`);
 
   await fs.writeFile(mainIndexPath, newMainIndex);
+
+  return {};
 }
 
 module.exports = [

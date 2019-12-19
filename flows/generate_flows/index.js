@@ -14,7 +14,7 @@ function npmInit() {
   const init = spawn('npm', ['init','--yes'], {shell: true});
 
   return new Promise(resolve => {
-    init.stdout.once('close', () => resolve())
+    init.stdout.once('close', () => resolve({}))
   });
 }
 
@@ -27,7 +27,7 @@ function npmInstall() {
   const installDeps = spawn('npm', ['install', ...dependencies], {shell: true});
 
   return new Promise(resolve => {
-    installDeps.stdout.once('close', () => resolve())
+    installDeps.stdout.once('close', () => resolve({}))
   })
 }
 
@@ -36,7 +36,7 @@ function gitInit() {
   const init = spawn('git', ['init'], {shell: true});
 
   return new Promise(resolve => {
-    init.stdout.once('close', () => resolve())
+    init.stdout.once('close', () => resolve({}))
   })
 }
 
@@ -44,7 +44,7 @@ function copyFiles() {
   console.log('copy template');
   return new Promise((resolve, reject) => {
     ncp(`${__dirname}/templates`, process.cwd(), err => {
-      if(!err) return resolve();
+      if(!err) return resolve({});
       return reject(err);
     });
   });
