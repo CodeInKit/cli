@@ -9,8 +9,6 @@ const fs = require('fs');
 
 flows.hook('exception', console.error);
 
-flows.hook('pre_action', console.log);
-
 fs.readdirSync(normalizedFlowsPath).forEach(function(filename) {
   const flow = require('./flows/' + filename);
   const filenameWithoutSuffix = filename.indexOf('.') !== -1 ? filename.split('.').slice(0, -1).join('.') : filename;
