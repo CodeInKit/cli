@@ -1,15 +1,19 @@
 const path = require('path');
 const fs = require('fs').promises;
 const { Flows } = require('@codeinkit/flows');
+const { PerformanceObserver, performance } = require('perf_hooks');
+const Promise = require('bluebird');
 const executionFlow = new Flows();
 
 function getParams(data) {  
+  const json = data.dataPath;
   const flowPath = path.join(process.cwd(), `./flows/${data.flowName}`);
   const dataPath = path.join(process.cwd(), data.dataPath);
   const normalizedSetupPath = path.join(process.cwd(), 'setup');
     
   return {
     ...data,
+    json,
     flowPath,
     dataPath,
     normalizedSetupPath
@@ -19,7 +23,16 @@ function getParams(data) {
 function UNSAFE_dynamicRequire(data, unsafe) {
   try {
     const flow = require(data.flowPath);
-    const actiondata = require(data.dataPath);
+    let actiondata = {};
+    try {
+      actiondata = require(data.dataPath);
+    } catch(err) {
+      try {
+        actiondata = JSON.parse(data.json);
+      } catch(err) {
+        throw err;
+      }
+    }
 
     unsafe.flow = flow;
     unsafe.data = actiondata;
@@ -43,15 +56,37 @@ async function UNSAFE_includeSetup(data, unsafe) {
 
 async function UNSAFE_executeFlow(data, unsafe) {
   executionFlow.register(data.flowName, unsafe.flow);
+  const obs = new PerformanceObserver((items) => {
+    console.log(items.getEntries()[0].duration);
+    performance.clearMarks();
+  });
+  obs.observe({ entryTypes: ['measure'] });
   console.log('EXECUTING:', data.flowName, unsafe.data);
 
   try {
     console.log(`########################################`);
-    const res = await executionFlow.execute(data.flowName, unsafe.data);
-    console.log(res);
-    console.log(`#########COPYABLE JSON##################`);
-    console.log(JSON.stringify(res));
-    console.log(`########################################`);
+    if(unsafe.data.length) {
+      await Promise.each(unsafe.data, async (item, idx) => {
+        performance.mark('flow_start_'+idx);
+        const res = await executionFlow.execute(data.flowName, item);
+        performance.mark('flow_end'+idx);
+        console.log(res);
+        performance.measure('flow_start to flow_end', 'flow_start'+idx, 'flow_end'+idx);
+
+        console.log(`#########COPYABLE JSON##################`);
+        console.log(JSON.stringify(res));
+        console.log(`########################################`);
+      })
+    } else {
+      performance.mark('flow_start');
+      const res = await executionFlow.execute(data.flowName, unsafe.data);
+      performance.mark('flow_end');
+      console.log(res);
+      performance.measure('flow_start to flow_end', 'flow_start', 'flow_end');
+      console.log(`#########COPYABLE JSON##################`);
+      console.log(JSON.stringify(res));
+      console.log(`########################################`);
+      }
   } catch(err) {
     console.error(`ERROR: ${err.message}`);
     console.log(`########################################`);
