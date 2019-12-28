@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 function getParams(data) {  
   const flowPath = path.join(process.cwd(), `./flows/${data.flowName}`);
   const flowAction = parseInt(data.flowAction);
+  const dataJson = data.dataPath;
   const dataPath = path.join(process.cwd(), data.dataPath);
   const normalizedSetupPath = path.join(process.cwd(), 'setup');
     
@@ -14,6 +15,7 @@ function getParams(data) {
     flowPath,
     flowAction,
     dataPath,
+    dataJson,
     normalizedSetupPath
   }
 }
@@ -29,7 +31,7 @@ function UNSAFE_dynamicRequire(data, unsafe) {
       actiondata = require(data.dataPath);
     } catch(err) {
       try {
-        actiondata = JSON.parse(data.dataPath);
+        actiondata = JSON.parse(data.dataJson);
       } catch(err) {
         throw err;
       }
