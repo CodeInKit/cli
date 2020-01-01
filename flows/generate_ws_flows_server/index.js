@@ -22,7 +22,7 @@ function npmInstall() {
   const dependencies = [
     'bluebird',
     'websocket',
-    '@codeinkit/flows'
+    '@codeinkit/flows-framework'
   ];
   const installDeps = spawn('npm', ['install', ...dependencies], {shell: true});
 
