@@ -3,7 +3,17 @@ const fs = require('fs').promises;
 const { Flows } = require('@codeinkit/flows');
 const { PerformanceObserver, performance } = require('perf_hooks');
 const Promise = require('bluebird');
+const clearModule = require('clear-module');
 const executionFlow = new Flows();
+const obs = new PerformanceObserver((items) => {
+  console.log(items.getEntries()[0].duration);
+  performance.clearMarks();
+});
+executionFlow.hook('exception', console.error);
+executionFlow.hook('pre_action', ({actionFn, input}) => {
+  console.log(`running action ${actionFn.name} with:`, input);
+  
+});
 
 function getParams(data) {  
   const json = data.dataPath;
@@ -23,6 +33,7 @@ function getParams(data) {
 function UNSAFE_dynamicRequire(data, unsafe) {
   try {
     const flow = require(data.flowPath);
+    clearModule(data.flowPath);
     let actiondata = {};
     try {
       actiondata = require(data.dataPath);
@@ -47,6 +58,7 @@ async function UNSAFE_includeSetup(data, unsafe) {
   (await fs.readdir(data.normalizedSetupPath)).forEach((filename) => {
     if(filename === '.gitkeep') return;
     const singleSetup = require(data.normalizedSetupPath + '/' + filename);
+    clearModule(data.normalizedSetupPath + '/' + filename);
     const filenameWithoutSuffix = filename.split('.').slice(0, -1).join('.');
     global[filenameWithoutSuffix] = singleSetup;
   });
@@ -56,10 +68,6 @@ async function UNSAFE_includeSetup(data, unsafe) {
 
 async function UNSAFE_executeFlow(data, unsafe) {
   executionFlow.register(data.flowName, unsafe.flow);
-  const obs = new PerformanceObserver((items) => {
-    console.log(items.getEntries()[0].duration);
-    performance.clearMarks();
-  });
   obs.observe({ entryTypes: ['measure'] });
   console.log('EXECUTING:', data.flowName, unsafe.data);
 
@@ -70,7 +78,7 @@ async function UNSAFE_executeFlow(data, unsafe) {
         performance.mark('flow_start_'+idx);
         const res = await executionFlow.execute(data.flowName, item);
         performance.mark('flow_end'+idx);
-        console.log(res);
+        console.log('data from flow', res);
         performance.measure('flow_start to flow_end', 'flow_start'+idx, 'flow_end'+idx);
 
         console.log(`#########COPYABLE JSON##################`);
@@ -92,8 +100,13 @@ async function UNSAFE_executeFlow(data, unsafe) {
     console.log(`########################################`);
   }
 
-  process.exit(0);
+  if(!data.isWatch) {
+    process.exit(0);
+  }
+
+  return data;
 }
+
 
 module.exports = [
   getParams, 

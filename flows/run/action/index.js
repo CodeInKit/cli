@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const { PerformanceObserver, performance } = require('perf_hooks');
 const Promise = require('bluebird');
 
-function getParams(data) {  
+function getParams(data) {
   const flowPath = path.join(process.cwd(), `./flows/${data.flowName}`);
   const flowAction = parseInt(data.flowAction);
   const dataJson = data.dataPath;
