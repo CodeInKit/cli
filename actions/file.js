@@ -11,7 +11,6 @@ function copyTemplatesWrapper(dirname) {
   }
 }
 
-
 module.exports = {
   copyTemplates: copyTemplatesWrapper
 }
