@@ -73,7 +73,12 @@ async function createIndex(data) {
   flowsFramework.init(__dirname);
   
   exports.handler = async (event) => {
-    flowsFramework.flows.execute('${flowName}', event);
+    const response = await flowsFramework.flows.execute('${flowName}', event);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(response)
+    }
   };`;
 
   await fs.promises.writeFile(`${data.workDir}/index.js`, indexFile);
@@ -141,7 +146,12 @@ function cloudFormationLambda(data) {
       Properties: {
         Handler: 'index.handler',
         Runtime: 'nodejs12.x',
-        Role: 'arn:aws:iam::466921418405:role/service-role/test-role-ko31absy',
+        Role: {
+          'Fn::GetAtt': [
+              'lambdaIAMRole',
+              'Arn'
+          ]
+        },
         Code: {
           S3Bucket: data.s3Object.Bucket,
           S3Key: data.s3Object.Key
