@@ -97,7 +97,7 @@ async function installDependencies(data) {
 
   await run('npm', ['init', '--yes'], {shell: true, cwd: data.workDir});
   await run('npm', ['version', data.version], {shell: true, cwd: data.workDir});
-  await run('npm', ['install', '@codeinkit/flows-framework', ..._.filter(data.npmInstall, d => d[0] !== '.' && d[0] !== '/')], {shell: true, cwd: data.workDir});
+  await run('npm', ['install', '@codeinkit/flows-framework@next', ..._.filter(data.npmInstall, d => d[0] !== '.' && d[0] !== '/')], {shell: true, cwd: data.workDir});
   
   return data;
 }

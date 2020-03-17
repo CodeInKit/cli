@@ -67,38 +67,59 @@ async function uploadS3BuildCloudFormation({ package, project, flowsFiles }) {
 
 async function checkHttpRoutes(data) {
   const routes = require(path.resolve(process.cwd(), 'routes/rest.js'));
-  const gateways = {};
-  const gatewayDeployment = {};
   const invokers = {};
+  const resources = {};
 
   const cfRoutes = _.map(routes, (flowAction, route) => {
     const [method, rawGateway] = route.split(' ');
     const gateway = _.camelCase(rawGateway.replace(/\//g, ' ').toUpperCase().replace(/:/g, ' '));
     const lambda = _.camelCase(flowAction.replace(/\//g, ' ').toUpperCase().replace(/_/g, ' '));
-    gateways[`${gateway}Gateway`] = {
-      Type: "AWS::ApiGateway::RestApi",
-      Properties: {
-          Name: gateway,
-      }
-    };
+
+    const pathResources = rawGateway.split('/');
+    for (let i = 1; i < pathResources.length; i++) {
+      const pathResource = pathResources[i];
+      const resourceName = _.reduce(pathResources, (a, p, j) => j <= i ? a + ' ' + p : a, '');
+      const prevResourceName = _.reduce(pathResources, (a, p, j) => j <= i-1 ? a + ' ' + p : a, '');
+      const parent = i > 1 ? {
+        Ref: `${_.camelCase(prevResourceName.replace(/:/g, ' '))}Route`
+      } : {
+        'Fn::GetAtt': [
+          'appGateway',
+          'RootResourceId'
+        ]
+      };
+      
+      resources[`${_.camelCase(resourceName.replace(/:/g, ' '))}Route`] = {
+        Type: 'AWS::ApiGateway::Resource',
+        Properties: {
+          RestApiId: {
+            Ref: 'appGateway'
+          },
+          ParentId: parent,
+          // Path: rawGateway.replace(/\/\:(.+?)(\/|$)/g, '/{$1}/')
+          PathPart: pathResource.replace(/\:(.+?)$/g, '{$1}')
+        }
+      };
+        
+    }
 
     return {
-      name: `${lambda}Route`,
-      Type: "AWS::ApiGateway::Method",
+      name: `${lambda}Method`,
+      Type: 'AWS::ApiGateway::Method',
       Properties: {
-        AuthorizationType: "NONE",
+        AuthorizationType: 'NONE',
         HttpMethod: method.toUpperCase(),
         Integration: {
           IntegrationHttpMethod: method.toUpperCase(),
-          Type: "AWS_PROXY",
+          Type: 'AWS_PROXY',
           Uri: {
             'Fn::Sub': [
-              "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations",
+              'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations',
               {
                 lambdaArn: {
                   'Fn::GetAtt': [
                     lambda,
-                    "Arn"
+                    'Arn'
                   ]
                 }
               }
@@ -106,13 +127,10 @@ async function checkHttpRoutes(data) {
           }
         },
         ResourceId: {
-          'Fn::GetAtt': [
-            `${gateway}Gateway`,
-            "RootResourceId"
-          ]
+          Ref: `${gateway}Route`
         },
         RestApiId: {
-          Ref: `${gateway}Gateway`
+          Ref: `appGateway`
         }
       }
     }
@@ -122,19 +140,11 @@ async function checkHttpRoutes(data) {
     const [method, rawGateway] = route.split(' ');
     const gateway = _.camelCase(rawGateway.replace(/\//g, ' ').toUpperCase().replace(/:/g, ' '));
     const lambda = _.camelCase(flowAction.replace(/\//g, ' ').toUpperCase().replace(/_/g, ' '));
+    let routeFixed = rawGateway.replace(/\/\:(.+?)($|\/)/g, '/{$1}/');
+    
+    routeFixed = routeFixed.lastIndexOf('/') === routeFixed.length-1 ?
+      routeFixed.substring(0, routeFixed.length-1) : routeFixed;
 
-    gatewayDeployment[`${gateway}GatewayDeployment`] = {
-      Type: 'AWS::ApiGateway::Deployment',
-      DependsOn: [
-          ..._.map(cfRoutes, 'name')
-      ],
-      Properties: {
-          RestApiId: {
-              Ref: `${gateway}Gateway`
-          },
-          StageName: 'app'
-      }
-    }
 
     invokers[`${gateway}ApiGatewayInvoke`] = {
       Type: 'AWS::Lambda::Permission',
@@ -148,7 +158,7 @@ async function checkHttpRoutes(data) {
           },
           Principal: 'apigateway.amazonaws.com',
           SourceArn: {
-              'Fn::Sub': 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${' + gateway + 'Gateway}/*/' + method.toUpperCase() + '/'
+              'Fn::Sub': 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${appGateway}/*/' + method.toUpperCase() + routeFixed
           }
       }
     }
@@ -157,13 +167,12 @@ async function checkHttpRoutes(data) {
   return {
     ...data, 
     routes: _(cfRoutes).toPlainObject().mapKeys(r => r.name).mapValues(r => _.omit(r, 'name')).value(),
-    gateways,
-    gatewayDeployment,
-    invokers
+    invokers,
+    routesResources: resources
   };
 }
 
-function createCloudFormation({resources, routes, gateways, gatewayDeployment, invokers}) {
+function createCloudFormation({resources, routes, invokers, routesResources}) {
   const cloudFormation = {
     AWSTemplateFormatVersion: '2010-09-09',
       Resources: {
@@ -203,9 +212,25 @@ function createCloudFormation({resources, routes, gateways, gatewayDeployment, i
             }]
           }
         },
-        ...gatewayDeployment,
+          appGateway: {
+            Type: 'AWS::ApiGateway::RestApi',
+            Properties: {
+              Name: 'appGateway'
+            }
+          },
+          appGatewayDeployment: {
+            Type: 'AWS::ApiGateway::Deployment',
+            DependsOn: [
+                ..._.keys(routes)
+            ],
+            Properties: {
+                RestApiId: {
+                    Ref: `appGateway`
+                },
+                StageName: 'app'
+          }},
+        ...routesResources,
         ...invokers,
-        ...gateways,
         ...routes,
         ..._.omit(_.reduce(resources, (acc, resource) => ({
           ...acc,
