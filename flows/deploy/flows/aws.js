@@ -218,6 +218,15 @@ function createCloudFormation({resources, routes, invokers, routesResources}) {
               Name: 'appGateway'
             }
           },
+          lambdaLogGroup: {
+            Type: "AWS::Logs::LogGroup",
+            Properties: {
+                LogGroupName: {
+                    'Fn::Sub': "/aws/lambda/appLog"
+                },
+                RetentionInDays: 90
+              }
+            },
           appGatewayDeployment: {
             Type: 'AWS::ApiGateway::Deployment',
             DependsOn: [
@@ -243,66 +252,26 @@ function createCloudFormation({resources, routes, invokers, routesResources}) {
   console.log(JSON.stringify(cloudFormation));
   console.log('*******************');
 
-  return {cloudFormation};
+  return {template: JSON.stringify(cloudFormation)};
 }
 
-function deployCF(data) {
+function deployCF({template}) {
   var cloudformation = new aws.CloudFormation();
   var params = {
-    StackName: 'STRING_VALUE', /* required */
+    StackName: 'app',
     Capabilities: [
-      CAPABILITY_IAM | CAPABILITY_NAMED_IAM | CAPABILITY_AUTO_EXPAND,
-      /* more items */
+      'CAPABILITY_IAM',
     ],
-    ClientRequestToken: 'STRING_VALUE',
-    DisableRollback: true || false,
-    EnableTerminationProtection: true || false,
-    NotificationARNs: [
-      'STRING_VALUE',
-      /* more items */
-    ],
-    OnFailure: DO_NOTHING | ROLLBACK | DELETE,
-    Parameters: [
-      {
-        ParameterKey: 'STRING_VALUE',
-        ParameterValue: 'STRING_VALUE',
-        ResolvedValue: 'STRING_VALUE',
-        UsePreviousValue: true || false
-      },
-      /* more items */
-    ],
-    ResourceTypes: [
-      'STRING_VALUE',
-      /* more items */
-    ],
-    RoleARN: 'STRING_VALUE',
-    RollbackConfiguration: {
-      MonitoringTimeInMinutes: 'NUMBER_VALUE',
-      RollbackTriggers: [
-        {
-          Arn: 'STRING_VALUE', /* required */
-          Type: 'STRING_VALUE' /* required */
-        },
-        /* more items */
-      ]
-    },
-    StackPolicyBody: 'STRING_VALUE',
-    StackPolicyURL: 'STRING_VALUE',
-    Tags: [
-      {
-        Key: 'STRING_VALUE', /* required */
-        Value: 'STRING_VALUE' /* required */
-      },
-      /* more items */
-    ],
-    TemplateBody: 'STRING_VALUE',
-    TemplateURL: 'STRING_VALUE',
-    TimeoutInMinutes: 'NUMBER_VALUE'
+    OnFailure: 'DELETE',
+    TemplateBody: template
   };
-  cloudformation.createStack(params, function(err, data) {
-    if (err) console.log(err, err.stack); // an error occurred
-    else     console.log(data);           // successful response
-  });
+
+  return new Promise((resolve, reject) => {
+    cloudformation.createStack(params, function(err, data) {
+      if (err) reject(err);
+      else     resolve(data);
+    });
+  })
 }
 
 module.exports = [
@@ -310,5 +279,6 @@ module.exports = [
   cloudFormationS3,
   uploadS3BuildCloudFormation,
   checkHttpRoutes,
-  createCloudFormation
+  createCloudFormation,
+  deployCF
 ];
