@@ -96,7 +96,6 @@ async function checkHttpRoutes(data) {
             Ref: 'appGateway'
           },
           ParentId: parent,
-          // Path: rawGateway.replace(/\/\:(.+?)(\/|$)/g, '/{$1}/')
           PathPart: pathResource.replace(/\:(.+?)$/g, '{$1}')
         }
       };
@@ -110,7 +109,7 @@ async function checkHttpRoutes(data) {
         AuthorizationType: 'NONE',
         HttpMethod: method.toUpperCase(),
         Integration: {
-          IntegrationHttpMethod: method.toUpperCase(),
+          IntegrationHttpMethod: 'POST',
           Type: 'AWS_PROXY',
           Uri: {
             'Fn::Sub': [
@@ -124,8 +123,16 @@ async function checkHttpRoutes(data) {
                 }
               }
             ]
-          }
+          },
+          PassthroughBehavior: 'WHEN_NO_MATCH',
+          IntegrationResponses: [{
+            StatusCode: 200
+          }]
         },
+        MethodResponses: [{
+          StatusCode: 200,
+          ResponseModels: {}
+        }],
         ResourceId: {
           Ref: `${gateway}Route`
         },
@@ -150,15 +157,14 @@ async function checkHttpRoutes(data) {
       Type: 'AWS::Lambda::Permission',
       Properties: {
           Action: 'lambda:InvokeFunction',
-          FunctionName: {
-              'Fn::GetAtt': [
-                lambda,
-                  'Arn'
-              ]
-          },
+          FunctionName: { 'Ref': lambda },
           Principal: 'apigateway.amazonaws.com',
           SourceArn: {
-              'Fn::Sub': 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${appGateway}/*/' + method.toUpperCase() + routeFixed
+            'Fn::Sub': ['arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${appGateway}/${stage}/${method}/${path}', {
+              method: method.toUpperCase(),
+              path: routeFixed.substring(1),
+              stage: 'app'
+            }]
           }
       }
     }
@@ -255,8 +261,8 @@ function createCloudFormation({resources, routes, invokers, routesResources}) {
   return {template: JSON.stringify(cloudFormation)};
 }
 
-function deployCF({template}) {
-  var cloudformation = new aws.CloudFormation();
+async function deployCF({template}) {
+  var cloudformation = new aws.CloudFormation({region: 'eu-central-1'});
   var params = {
     StackName: 'app',
     Capabilities: [
@@ -265,6 +271,26 @@ function deployCF({template}) {
     OnFailure: 'DELETE',
     TemplateBody: template
   };
+
+  const stacks = await (new Promise(resolve => {
+    cloudformation.describeStacks((err, data) => {
+      resolve(data);
+    });
+  }));
+  
+  if(stacks && stacks.Stacks) {
+    const stack = _.find(stacks.Stacks, s => s.StackName === 'app');
+
+    if(stack) {
+      return new Promise((resolve, reject) => {
+        cloudformation.updateStack(_.omit(params, 'OnFailure'), (err, data) => {
+          if (err) reject(err);
+          else     resolve(data);
+        });
+      })
+    }
+
+  }
 
   return new Promise((resolve, reject) => {
     cloudformation.createStack(params, function(err, data) {

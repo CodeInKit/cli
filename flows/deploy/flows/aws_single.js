@@ -69,10 +69,9 @@ async function createIndex(data) {
   const flowPath = data.path;
   const flowName = flowPath.substring(flowPath.indexOf('flows')+6, flowPath.indexOf('.js'));
   const indexFile = `const flowsFramework = require('@codeinkit/flows-framework');
-
-  flowsFramework.init(__dirname);
   
   exports.handler = async (event) => {
+    await flowsFramework.init(__dirname);
     const response = await flowsFramework.flows.execute('${flowName}', event);
 
     return {
@@ -90,7 +89,6 @@ async function installDependencies(data) {
   const run = (command, args, options) => new Promise((resolve, reject) => {
     const p = child_process.spawn(command, args, options);
 
-    // p.stdout.on('data', (d) => console.log(d.toString()));
     p.once('close', resolve);
     p.once('error', reject);
   });
