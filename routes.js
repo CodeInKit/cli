@@ -21,6 +21,9 @@ module.exports = function(exec) {
       if(argv.type === 'flows' && argv.target === 'aws') {
         exec('deploy/flows/aws', {}, {});
       }
+      if(argv.type === 'rest' && argv.target === 'aws') {
+        exec('deploy/flows/aws_rest', {}, {});
+      }
     })
     .command('watch <flowName> <dataPath>', 'execute a specific flow', _.noop, (argv) => {
       const flowPath = path.join(process.cwd(), `./flows/${argv.flowName}.js`);
