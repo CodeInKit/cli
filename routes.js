@@ -9,7 +9,8 @@ module.exports = function(exec) {
       exec(`generate/${argv.template}`, {});
     })
     .command('add <framework>', 'add flows client to "angular-cli" or "create-react-app" project', _.noop, (argv) => {
-      exec(`add/${argv.framework}`, {});
+      console.error('This functionality is deprecated');
+      // exec(`add/${argv.framework}`, {});
     })
     .command('action <flowName> <flowActionNumber> <dataPath>', 'execute a specific action with data from path', _.noop, (argv) => {
       exec('run/action', {flowName: argv.flowName, flowAction: argv.flowActionNumber, dataPath: argv.dataPath}, {});
