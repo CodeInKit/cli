@@ -1,5 +1,8 @@
 const flowsFramework = require('@codeinkit/flows-framework');
+const wsRoutes = require('@codeinkit/ws-routes');
 
-flowsFramework.init(__dirname, {
-  isWsServer: true
-});
+(async () => {
+  await flowsFramework.init(__dirname);
+
+  await flowsFramework.addRoute(wsRoutes);
+})();
