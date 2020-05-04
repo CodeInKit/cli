@@ -7,7 +7,7 @@ const aws = require('aws-sdk');
 const _ = require('lodash');
 
 const flows = new Flows();
-flows.register('single.deploy', awsSingleDeploy);
+flows.register('single_deploy', awsSingleDeploy);
 
 async function getFlowsFilesPath() {
   const flowsFiles = [];
@@ -20,7 +20,11 @@ async function getFlowsFilesPath() {
     await Promise.each(files, async file => {
       const fullFilePath = path.join(folderPath, file);
       const stats = await fs.statAsync(fullFilePath);
-      
+
+      if(file[0] === '.') {
+        return;
+      }
+
       if(stats.isDirectory()) {
         await getFolder(fullFilePath);
       } else {
@@ -53,7 +57,7 @@ async function cloudFormationS3(data) {
 
 async function uploadS3BuildCloudFormation({ package, project, flowsFiles }) {
 
-  const resources = await Promise.mapSeries(flowsFiles, path => flows.execute('single.deploy', {
+  const resources = await Promise.mapSeries(flowsFiles, path => flows.execute('single_deploy', {
     path,
     project,
     projectName: package.name,

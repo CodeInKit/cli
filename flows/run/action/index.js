@@ -42,7 +42,6 @@ function UNSAFE_dynamicRequire(data, unsafe) {
     unsafe.action = action;
   } catch(err) {
     console.error(err);
-    
   }
 
   return data;
@@ -92,7 +91,7 @@ async function UNSAFE_executeAction(data, unsafe) {
       console.log(`########################################`);
     }
   } catch(err) {
-    console.error(`ERROR: ${err.message}`);
+    console.error(`ERROR: ${err.message ? err.message : err}`);
     console.log(`########################################`);
   }
 

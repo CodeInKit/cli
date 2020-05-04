@@ -19,6 +19,8 @@ module.exports = function(exec) {
       exec('run/flow', {flowName: argv.flowName, dataPath: argv.dataPath}, {});
     })
     .command('deploy <type> <target>', 'deploy specific flow', _.noop, (argv) => {
+      const package = require(`${process.cwd()}/package.json`);
+
       if(argv.type === 'flows' && argv.target === 'aws') {
         exec('deploy/flows/aws', {}, {});
       }
