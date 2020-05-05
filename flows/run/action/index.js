@@ -1,41 +1,20 @@
 const path = require('path');
-const fs = require('fs').promises;
 const { PerformanceObserver, performance } = require('perf_hooks');
 const Promise = require('bluebird');
 
-function getParams(data) {
-  const flowPath = path.join(process.cwd(), `./flows/${data.flowName}`);
-  const flowAction = parseInt(data.flowAction);
-  const dataJson = data.dataPath;
-  const dataPath = path.join(process.cwd(), data.dataPath);
-  const normalizedSetupPath = path.join(process.cwd(), 'setup');
+function getParams({flowName, actionNumber, data, pref, json}) {  
+  const flowPath = path.join(process.cwd(), `./flows/${flowName}`);
     
   return {
-    ...data,
-    flowPath,
-    flowAction,
-    dataPath,
-    dataJson,
-    normalizedSetupPath
+    flowName, actionNumber, data, pref, json, flowPath
   }
 }
 
-function UNSAFE_dynamicRequire(data, unsafe) {
-  try {
-    
+function dynamicRequire(data, unsafe) {
+  try {    
     const flow = require(data.flowPath);
-    const action = flow[data.flowAction];
-    let actiondata = {};
-
-    try {
-      actiondata = require(data.dataPath);
-    } catch(err) {
-      try {
-        actiondata = JSON.parse(data.dataJson);
-      } catch(err) {
-        throw err;
-      }
-    }
+    const action = flow[data.actionNumber];
+    const actiondata = JSON.parse(data.data);
 
     unsafe.flow = flow;
     unsafe.data = actiondata;
@@ -47,25 +26,14 @@ function UNSAFE_dynamicRequire(data, unsafe) {
   return data;
 }
 
-async function UNSAFE_includeSetup(data, unsafe) {
-  (await fs.readdir(data.normalizedSetupPath)).forEach((filename) => {
-    if(filename === '.gitkeep') return;
-    const singleSetup = require(data.normalizedSetupPath + '/' + filename);
-    const filenameWithoutSuffix = filename.split('.').slice(0, -1).join('.');
-    global[filenameWithoutSuffix] = singleSetup;
-  });
-  
-  return data;
-}
-
-async function UNSAFE_executeAction(data, unsafe) {
+async function executeAction(data, unsafe) {
   const obs = new PerformanceObserver((items) => {
     console.log(items.getEntries()[0].duration);
     performance.clearMarks();
   });
   obs.observe({ entryTypes: ['measure'] });
   
-  console.log('EXECUTING:', data.flowName, data.flowAction, unsafe.action.name, unsafe.data);
+  console.log('EXECUTING:', data.flowName, data.actionNumber, unsafe.action.name, unsafe.data);
 
   try {
     console.log(`########################################`);
@@ -100,7 +68,6 @@ async function UNSAFE_executeAction(data, unsafe) {
 
 module.exports = [
   getParams, 
-  UNSAFE_dynamicRequire, 
-  UNSAFE_includeSetup, 
-  UNSAFE_executeAction
+  dynamicRequire, 
+  executeAction
 ];

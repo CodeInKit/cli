@@ -15,35 +15,19 @@ executionFlow.hook('pre_action', ({actionFn, input}) => {
   
 });
 
-function getParams(data) {  
-  const json = data.dataPath;
-  const flowPath = path.join(process.cwd(), `./flows/${data.flowName}`);
-  const dataPath = path.join(process.cwd(), data.dataPath);
-  const normalizedSetupPath = path.join(process.cwd(), 'setup');
+function getParams({flowName, actionNumber, data, pref, json}) {  
+  const flowPath = path.join(process.cwd(), `./flows/${flowName}`);
     
   return {
-    ...data,
-    json,
-    flowPath,
-    dataPath,
-    normalizedSetupPath
+    flowName, actionNumber, data, pref, json, flowPath
   }
 }
 
-function UNSAFE_dynamicRequire(data, unsafe) {
+function dynamicRequire(data, unsafe) {
   try {
     const flow = require(data.flowPath);
     clearModule(data.flowPath);
-    let actiondata = {};
-    try {
-      actiondata = require(data.dataPath);
-    } catch(err) {
-      try {
-        actiondata = JSON.parse(data.json);
-      } catch(err) {
-        throw err;
-      }
-    }
+    const actiondata = JSON.parse(data.json);
 
     unsafe.flow = flow;
     unsafe.data = actiondata;
@@ -54,19 +38,7 @@ function UNSAFE_dynamicRequire(data, unsafe) {
   return data;
 }
 
-async function UNSAFE_includeSetup(data, unsafe) {
-  (await fs.readdir(data.normalizedSetupPath)).forEach((filename) => {
-    if(filename === '.gitkeep') return;
-    const singleSetup = require(data.normalizedSetupPath + '/' + filename);
-    clearModule(data.normalizedSetupPath + '/' + filename);
-    const filenameWithoutSuffix = filename.split('.').slice(0, -1).join('.');
-    global[filenameWithoutSuffix] = singleSetup;
-  });
-  
-  return data;
-}
-
-async function UNSAFE_executeFlow(data, unsafe) {
+async function executeFlow(data, unsafe) {
   executionFlow.register(data.flowName, unsafe.flow);
   obs.observe({ entryTypes: ['measure'] });
   console.log('EXECUTING:', data.flowName, unsafe.data);
@@ -110,7 +82,6 @@ async function UNSAFE_executeFlow(data, unsafe) {
 
 module.exports = [
   getParams, 
-  UNSAFE_dynamicRequire, 
-  UNSAFE_includeSetup, 
-  UNSAFE_executeFlow
+  dynamicRequire, 
+  executeFlow
 ];

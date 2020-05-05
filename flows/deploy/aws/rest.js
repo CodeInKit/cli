@@ -4,7 +4,7 @@ const path = require('path');
 const aws = require('aws-sdk');
 const _ = require('lodash');
 
-async function getTemplate(data) {
+async function getTemplate() {
   const cloudformation = new aws.CloudFormation({region: 'eu-central-1'});
 
   const template = await (new Promise(resolve => {

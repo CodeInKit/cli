@@ -1,3 +1,5 @@
 const flowsFramework = require('@codeinkit/flows-framework');
 
-flowsFramework.init(__dirname);
+(async () => {
+  await flowsFramework.init(__dirname);
+})();
