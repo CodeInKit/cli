@@ -1,13 +1,10 @@
-const ncp = require('ncp').ncp;
+const fs = require('fs-extra');
 
 function copyTemplatesWrapper(dirname) {
   return function copyTemplates() {
-    return new Promise((resolve, reject) => {
-      ncp(`${dirname}/_templates`, process.cwd(), err => {
-        if(!err) return resolve({});
-        return reject(err);
-      });
-    });
+    return fs.copy(`${dirname}/_templates`, process.cwd())
+      .then(()=>({}))
+      .catch(err => new Error(err));
   }
 }
 
