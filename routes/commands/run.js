@@ -5,7 +5,6 @@ const Promise = require('bluebird');
 async function getFlowsFilesPath() {
   const flowsFiles = [];
   const project = process.cwd();
-  const package = require(`${project}/package.json`);
 
   async function getFolder(folderPath) {
     const files = await fs.readdirAsync(folderPath);
@@ -28,11 +27,11 @@ async function getFlowsFilesPath() {
 
   await getFolder(project + '/flows/');
 
-  return { package, project, flowsFiles }
+  return { project, flowsFiles }
 }
 
 module.exports = async (exec) => {
-  const {flowsFiles} = await getFlowsFilesPath();
+  const {flowsFiles} = await getFlowsFilesPath().catch(() => ({flowsFiles: []}));
 
   return {
     command: 'run <command> <flowName> [actionNumber] [data]',
