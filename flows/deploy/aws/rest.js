@@ -5,14 +5,16 @@ const aws = require('aws-sdk');
 const _ = require('lodash');
 
 async function getTemplate() {
-  const cloudformation = new aws.CloudFormation({region: 'eu-central-1'});
+  const project = process.cwd();
+  const package = require(`${project}/package.json`);
+  const cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION || 'us-east-1'});
 
   const template = await (new Promise(resolve => {
-    cloudformation.getTemplate({StackName:'app'}, (err, data) => {
+    cloudformation.getTemplate({StackName:package.name}, (err, data) => {
       resolve(data);
     });
   }));
-  return {template: JSON.parse(template.TemplateBody)};
+  return {template: JSON.parse(template.TemplateBody), package};
   
 }
 
@@ -35,7 +37,7 @@ async function checkHttpRoutes(data) {
         Ref: `${_.camelCase(prevResourceName.replace(/:/g, ' '))}Route`
       } : {
         'Fn::GetAtt': [
-          'appGateway',
+          `${_.camelCase(data.package.name)}Gateway`,
           'RootResourceId'
         ]
       };
@@ -44,7 +46,7 @@ async function checkHttpRoutes(data) {
         Type: 'AWS::ApiGateway::Resource',
         Properties: {
           RestApiId: {
-            Ref: 'appGateway'
+            Ref: `${_.camelCase(data.package.name)}Gateway`
           },
           ParentId: parent,
           PathPart: pathResource.replace(/\:(.+?)$/g, '{$1}')
@@ -88,7 +90,7 @@ async function checkHttpRoutes(data) {
           Ref: `${gateway}Route`
         },
         RestApiId: {
-          Ref: `appGateway`
+          Ref: `${_.camelCase(data.package.name)}Gateway`
         }
       }
     }
@@ -111,10 +113,10 @@ async function checkHttpRoutes(data) {
           FunctionName: { 'Ref': lambda },
           Principal: 'apigateway.amazonaws.com',
           SourceArn: {
-            'Fn::Sub': ['arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${appGateway}/${stage}/${method}/${path}', {
+            'Fn::Sub': ['arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${' + _.camelCase(data.package.name) + 'Gateway}/${stage}/${method}/${path}', {
               method: method.toUpperCase(),
               path: routeFixed.substring(1),
-              stage: 'app'
+              stage: 'production'
             }]
           }
       }
@@ -130,27 +132,27 @@ async function checkHttpRoutes(data) {
 }
 
 
-function buildCF({routes, invokers, routesResources, template}) {
+function buildCF({routes, invokers, routesResources, template, package}) {
   const cloudFormation = {    
     AWSTemplateFormatVersion: '2010-09-09',
       Resources: {
         ...template.Resources,
-        appGateway: {
+        [`${_.camelCase(package.name)}Gateway`]: {
           Type: 'AWS::ApiGateway::RestApi',
           Properties: {
-            Name: 'appGateway'
+            Name: `${_.camelCase(package.name)}Gateway`
           }
         },
-        appGatewayDeployment: {
+        [`${_.camelCase(package.name)}GatewayDeployment`]: {
           Type: 'AWS::ApiGateway::Deployment',
           DependsOn: [
             ..._.keys(routes)
           ],
           Properties: {
             RestApiId: {
-              Ref: `appGateway`
+              Ref: `${_.camelCase(package.name)}Gateway`
             },
-            StageName: 'app'
+            StageName: 'production'
           }
         },
         ...routesResources,
@@ -166,10 +168,10 @@ function buildCF({routes, invokers, routesResources, template}) {
   return {template: JSON.stringify(cloudFormation)};  
 }
 
-async function deployCF({template}) {
-  var cloudformation = new aws.CloudFormation();
+async function deployCF({template, package}) {
+  var cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION || 'us-east-1'});
   var params = {
-    StackName: 'app',
+    StackName: package.name,
     Capabilities: [
       'CAPABILITY_IAM',
     ],

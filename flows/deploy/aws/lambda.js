@@ -39,7 +39,7 @@ async function getFlowsFilesPath() {
 }
 
 async function cloudFormationS3(data) {
-  const s3 = new aws.S3();
+  const s3 = new aws.S3({region: process.env.AWS_REGION || 'us-east-1'});
   const createBucket = (name) => new Promise((resolve, reject) => {
     s3.createBucket({Bucket: name}, (err, info) => {
       if(err) {
@@ -65,11 +65,12 @@ async function uploadS3BuildCloudFormation({ package, project, flowsFiles }) {
   }));
 
   return {
+    package,
     resources
   }
 }
 
-function createCloudFormation({resources}) {
+function createCloudFormation({package, resources}) {
   const cloudFormation = {
     AWSTemplateFormatVersion: '2010-09-09',
       Resources: {
@@ -129,13 +130,13 @@ function createCloudFormation({resources}) {
   console.log(JSON.stringify(cloudFormation));
   console.log('*******************');
 
-  return {template: JSON.stringify(cloudFormation)};
+  return {template: JSON.stringify(cloudFormation), package};
 }
 
-async function deployCF({template}) {
-  var cloudformation = new aws.CloudFormation();
+async function deployCF({template, package}) {
+  var cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION || 'us-east-1'});
   var params = {
-    StackName: 'app',
+    StackName: package.name,
     Capabilities: [
       'CAPABILITY_IAM',
     ],
@@ -150,7 +151,7 @@ async function deployCF({template}) {
   }));
   
   if(stacks && stacks.Stacks) {
-    const stack = _.find(stacks.Stacks, s => s.StackName === 'app');
+    const stack = _.find(stacks.Stacks, s => s.StackName === package.name);
 
     if(stack) {
       return new Promise((resolve, reject) => {
