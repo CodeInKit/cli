@@ -165,7 +165,7 @@ function buildCF({routes, invokers, routesResources, template, package}) {
   console.log(JSON.stringify(cloudFormation));
   console.log('*******************');
 
-  return {template: JSON.stringify(cloudFormation)};  
+  return {template: JSON.stringify(cloudFormation), package};  
 }
 
 async function deployCF({template, package}) {
