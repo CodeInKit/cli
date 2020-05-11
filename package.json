@@ -1,6 +1,6 @@
 {
   "name": "@codeinkit/cli",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "code in kit cli tool",
   "main": "index.js",
   "bin": {
