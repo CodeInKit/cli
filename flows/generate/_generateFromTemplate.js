@@ -28,9 +28,15 @@ async function updatePackageJson(data) {
   package.scripts = {
     start: 'node .',
     deploy: 'cik deploy lambda',
+    action: 'cik run action',
+    flow: 'cik run flow',
     test: 'echo "no test platform is setup yet"'
   }
 
+  package.dependencies = {
+    "@codeinkit/cli": "1.8.5",
+    "@codeinkit/flows-framework": "3.0.6",
+  }
   await fs.writeFile(`${process.cwd()}/package.json`, JSON.stringify(package, null, 2));
   return data;
 }
@@ -39,17 +45,17 @@ function generateFromTemplate(dirname) {
   return [
     spinnerActions.spinnerStart('Generate Flow Server!'),
     spinnerActions.spinnerMessage('npm init'),
-    spawn('npm', ['init', '--yes'], {shell: true}),
-    spinnerActions.spinnerMessage('npm install @codeinkit/flows-framework'),
-    spawn('npm', ['install', '@codeinkit/flows-framework'], {shell: true}), 
-    spinnerActions.spinnerMessage('npm install @codeinkit/cli'),
-    spawn('npm', ['install', '@codeinkit/cli'], {shell: true}), 
+    spawn('npm', ['init', '--yes'], { stdio:'inherit'}),
     spinnerActions.spinnerMessage('git init'),
-    spawn('git', ['init'], {shell: true}), 
+    spawn('git', ['init'], { stdio:'inherit'}), 
     spinnerActions.spinnerMessage('copy template files'),
     fileActions.copyTemplates(dirname),
+    spinnerActions.spinnerMessage('create .gitignore'),
+    fileActions.writeFile(process.cwd() + '/.gitignore', 'node_modules\n.tmp'),
     spinnerActions.spinnerMessage('update package.json'),
     updatePackageJson,
+    spinnerActions.spinnerMessage('npm install'),
+    spawn('npm', ['install'], { stdio:'inherit'}),
     spinnerActions.spinnerMessage('done'),
     spinnerActions.spinnerStop,
     finishMessage

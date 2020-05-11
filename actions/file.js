@@ -1,13 +1,21 @@
-const fs = require('fs-extra');
+const fs = require('fs').promises;
+const fse = require('fs-extra');
 
 function copyTemplatesWrapper(dirname) {
   return function copyTemplates() {
-    return fs.copy(`${dirname}/_templates`, process.cwd())
-      .then(()=>({}))
-      .catch(err => new Error(err));
+    return fse.copy(`${dirname}/_templates`, process.cwd())
+      .then(()=>({}));
+  }
+}
+
+function writeFileWrapper(path, content) {
+  return function writeFile() {
+    return fs.writeFile(path, content)
+      .then(()=>({}));
   }
 }
 
 module.exports = {
-  copyTemplates: copyTemplatesWrapper
+  copyTemplates: copyTemplatesWrapper,
+  writeFile: writeFileWrapper
 }
