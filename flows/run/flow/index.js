@@ -27,7 +27,7 @@ function dynamicRequire(data, unsafe) {
   try {
     const flow = require(data.flowPath);
     clearModule(data.flowPath);
-    const actiondata = JSON.parse(data.json);
+    const actiondata = JSON.parse(data.data);
 
     unsafe.flow = flow;
     unsafe.data = actiondata;
