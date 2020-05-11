@@ -21,7 +21,7 @@
   "license": "MIT",
   "dependencies": {
     "@codeinkit/flows": "^1.0.7",
-    "@codeinkit/flows-contrib-node": "^0.0.1",
+    "@codeinkit/flows-contrib-node": "^0.0.2",
     "@codeinkit/flows-framework": "^3.0.0",
     "acorn": "^7.1.1",
     "acorn-walk": "^7.1.1",
