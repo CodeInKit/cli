@@ -113,7 +113,7 @@ async function checkHttpRoutes(data) {
           FunctionName: { 'Ref': lambda },
           Principal: 'apigateway.amazonaws.com',
           SourceArn: {
-            'Fn::Sub': ['arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${' + _.camelCase(data.package.name) + 'Gateway}/${stage}/${method}/${path}', {
+            'Fn::Sub': ['arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${' + _.camelCase(data.package.name) + 'Gateway}/*/*/${path}', {
               method: method.toUpperCase(),
               path: routeFixed.substring(1),
               stage: 'production'
