@@ -2,7 +2,7 @@
 module.exports = (exec) => {
 
   return {
-    command: 'generate [template]',
+    command: 'init [template]',
     desc: 'Generate flow server framework working with flows',
     builder: {
       template: {
@@ -11,7 +11,7 @@ module.exports = (exec) => {
       }
     },
     handler: (argv) => {
-      exec(`generate/${argv.template}`, {});
+      exec(`init/${argv.template}`, {});
     }
   }
 }
