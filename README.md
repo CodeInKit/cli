@@ -3,11 +3,9 @@
 ## Usage
 
 ```
-npx @codeinkit/cli generate flows-server
-npx @codeinkit/cli generate flows-ws-server
-npx @codeinkit/cli generate flows-rest-server
-npx @codeinkit/cli add react
-npx @codeinkit/cli add angular
+npx @codeinkit/cli init flows-server
+npx @codeinkit/cli init flows-ws-server
+npx @codeinkit/cli init flows-rest-server
 npx @codeinkit/cli action <flow name> <action number> <data path>
 npx @codeinkit/cli flow <flowName> <dataPath>
 ```
@@ -30,16 +28,6 @@ create a websocket server that work out of the box with client flows (ex: react-
 
 the file structure is the same as the `flow-server` but unlike the `flow-server` routes already written to support websocket
 and there is existing flow of `allow_origin` which allow all origins but can be change to support specific origins.
-
-### @codeinkit/cli add react-flows-client
-
-Add flows library to create-react-app project with the [https://www.npmjs.com/package/@codeinkit/flows-client](flows-client).
-This command also add the flows folder with ready to use flows instance and websocket. 
-
-### @codeinkit/cli add angular-flows-client
-
-Add flows library to angular-cli project with the [https://www.npmjs.com/package/@codeinkit/flows-client](flows-client).
-This command also add the flows folder with ready to use flows instance and websocket. 
 
 ### @codeinkit/cli <flow name> <action number> <data path>
 

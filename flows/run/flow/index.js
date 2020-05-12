@@ -3,7 +3,6 @@ const fs = require('fs').promises;
 const { Flows } = require('@codeinkit/flows');
 const { PerformanceObserver, performance } = require('perf_hooks');
 const Promise = require('bluebird');
-const clearModule = require('clear-module');
 const executionFlow = new Flows();
 const obs = new PerformanceObserver((items) => {
   console.log(items.getEntries()[0].duration);
@@ -26,7 +25,6 @@ function getParams({flowName, actionNumber, data, pref, json}) {
 function dynamicRequire(data, unsafe) {
   try {
     const flow = require(data.flowPath);
-    clearModule(data.flowPath);
     const actiondata = JSON.parse(data.data);
 
     unsafe.flow = flow;
