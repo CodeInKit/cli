@@ -34,8 +34,8 @@ async function updatePackageJson(data) {
   }
 
   package.dependencies = {
-    "@codeinkit/cli": "1.8.5",
-    "@codeinkit/flows-framework": "3.0.6",
+    "@codeinkit/cli": "^1.8.5",
+    "@codeinkit/flows-framework": "^3.0.6",
   }
   await fs.writeFile(`${process.cwd()}/package.json`, JSON.stringify(package, null, 2));
   return data;
